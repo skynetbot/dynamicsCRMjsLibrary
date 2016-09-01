@@ -41,26 +41,27 @@ mr.ajax = {
         }
         return encodeURI(query);
     },
-    retrieveMultiple: function (query) {
+    retrieveMultiple: function (query, options) {
         var promise = new Promise(function(resolve, reject) {
-            /*var optionString = "";
-            if (options != null) {
+            var optionString = "";
+            if (options != null || options != undefined) {
                 if (options.charAt(0) != "?") { optionString = "?" + options; }
                 else { optionString = options; }
-            }*/
+            }
             var xhr = new XMLHttpRequest();
-            xhr.open("GET", query, true);
+            xhr.open("GET", query + optionString, true);
             xhr.setRequestHeader("Accept", "application/json");
             xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
             xhr.onreadystatechange = function () {
                 if (this.readyState == 4) {
                     xhr.onreadystatechange = null;
                     if (this.status == 200) {
-                        var responseData = JSON.parse(this.resoponseText, mr.crm.dateReviver).d;
+                        var responseData = JSON.parse(this.responseText, mr.crm.dateReviver).d;
                         if (responseData.__next != null) {
                             var nextQuery = responseData.__next.substring((query).length);
-                            mr.ajax.retrieveMultiple(query + nextQuery);
-                        } else { resolve(this.response); }
+                            mr.ajax.retrieveMultiple(query, nextQuery);
+                        } /*else { resolve(this.response); }*/
+                        resolve(this);
                     } else { reject(this.statusText); }
                 }
             };
@@ -69,13 +70,20 @@ mr.ajax = {
         return promise;
     },
     callback: {
-        success: function (data, successCallback) {
+        success: function (data) {
             console.log(1, "success", JSON.parse(data,mr.crm.dateReviver).d);
-            successCallback;
+            //some code for the success callback
+            /*
+             * //Example:
+             * console.log("responseUrl", data.responseURL);
+             * var jsonData = JSON.parse(data.responseText, mr.crm.dateReviver).d;
+             * //do something with jsonData or:
+             * mr.ajax.retrieveMultiple(data.responseURL);
+             */
         },
-        error: function (data, errorCallback) {
+        error: function (data) {
             console.log(2, "error", JSON.parse(data));
-            errorCallback;
+            //some code for the error callback
         }
     }
 };
@@ -87,15 +95,9 @@ mr.ajax.retrieveMultiple(mr.ajax.qString(
     mr.crm.formId(),
     "account_relationship_name"
 ))
-.then(mr.ajax.callback.success(
-    data,
-    function() {
-        //some code for the success callback
-    }
-))
-.catch(mr.ajax.callback.error(
-    data,
-    function () {
-        //some code for the error callback
-    }
-));
+/*
+ * //Or just
+ * mr.ajax.retrieveMultiple("Contacts")
+ */
+.then(mr.ajax.callback.success)
+.catch(mr.ajax.callback.error);
