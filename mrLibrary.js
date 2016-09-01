@@ -12,8 +12,7 @@
          }
      },
      getClientUrl: function () {
-         var clientUrl = this.context().getClientUrl();
-         return clientUrl;
+         return this.context().getClientUrl();
      },
      oDataUrl: function () {
          return this.getClientUrl() + "/XRMServices/2011/OrganizationData.svc/";
